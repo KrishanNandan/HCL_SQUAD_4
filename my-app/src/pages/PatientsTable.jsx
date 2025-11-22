@@ -15,7 +15,6 @@ export default function PatientsTable({
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [sort, setSort] = useState({ key: "PatientName", direction: "asc" });
-  const [selectedIds, setSelectedIds] = useState(new Set());
 
   const { data: hookData, loading: hookLoading, error: hookError } = useDoctorDetails();
 
@@ -134,40 +133,6 @@ export default function PatientsTable({
     });
   }
 
-  function toggleSelectAll(e) {
-    const checked = e.target.checked;
-    if (checked) {
-      setSelectedIds(new Set(sorted.map((r) => r.id)));
-    } else {
-      setSelectedIds(new Set());
-    }
-  }
-
-  function toggleRow(id) {
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  }
-
-  async function handleDelete(id) {
-    if (onDelete) {
-      try {
-        await onDelete(id);
-      } catch (err) {
-        // bubble up but continue to update local list
-      }
-    }
-    setPatients((prev) => prev.filter((p) => String(p.id) !== String(id)));
-    setSelectedIds((s) => {
-      const next = new Set(s);
-      next.delete(id);
-      return next;
-    });
-  }
-
   // simple inline formatting helpers
   const formatNumber = (v) => (v == null || v === "" ? "—" : v);
   const styles = {
@@ -188,14 +153,6 @@ export default function PatientsTable({
         <table style={styles.table}>
           <thead>
             <tr>
-              <th style={styles.th}>
-                <input
-                  type="checkbox"
-                  aria-label="Select all"
-                  onChange={toggleSelectAll}
-                  checked={selectedIds.size > 0 && selectedIds.size === sorted.length}
-                />
-              </th>
               {columns.map((c) => (
                 <th key={c.key} style={styles.th} onClick={() => toggleSort(c.key)} title={`Sort by ${c.label}`}>
                   <span style={{ display: "inline-flex", gap: 6, alignItems: "center" }}>
@@ -210,28 +167,19 @@ export default function PatientsTable({
           <tbody>
             {(loading || hookLoading) ? (
               <tr>
-                <td colSpan={columns.length + 2} style={{ ...styles.td, textAlign: "center", padding: 30 }}>
+                <td colSpan={columns.length} style={{ ...styles.td, textAlign: "center", padding: 30 }}>
                   Loading...
                 </td>
               </tr>
             ) : pageRows.length === 0 ? (
               <tr>
-                <td colSpan={columns.length + 2} style={{ ...styles.td, textAlign: "center", padding: 30 }}>
+                <td colSpan={columns.length} style={{ ...styles.td, textAlign: "center", padding: 30 }}>
                   No patients found.
                 </td>
               </tr>
             ) : (
               pageRows.map((r) => (
                 <tr key={r.id ?? Math.random()}>
-                  <td style={styles.td}>
-                    <input
-                      type="checkbox"
-                      aria-label={`Select ${r.PatientName || r.id}`}
-                      checked={selectedIds.has(r.id)}
-                      onChange={() => toggleRow(r.id)}
-                    />
-                  </td>
-
                   <td style={styles.td}>{r.PatientName ?? "—"}</td>
                   <td style={styles.td}>{formatNumber(r.Age)}</td>
                   <td style={styles.td}>{r.Sex ?? "—"}</td>
