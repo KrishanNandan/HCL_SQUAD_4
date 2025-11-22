@@ -1,16 +1,24 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getUser, logout } from '../services/authService';
+import { useDoctorDetails } from '../hooks/useDoctorDetails';
 import '../styles/DoctorDashboard.css';
+
 
 const DoctorDashboard = () => {
   const navigate = useNavigate();
   const user = getUser();
+  const patient= useDoctorDetails();
+  console.log("krishan",patient);
 
   const handleLogout = () => {
     logout();
     navigate('/');
   };
+
+  useEffect(()=>{
+     
+  },[]);
 
   return (
     <div className="dashboard-container">
