@@ -4,14 +4,11 @@ import { getUser, logout } from '../services/authService';
 import { useDoctorDetails } from '../hooks/useDoctorDetails';
 import '../styles/DoctorDashboard.css';
 import PatientsTable from './PatientsTable';
-import SeasonalDiseases from './seasonalDiseases';
 
 
 const DoctorDashboard = () => {
   const navigate = useNavigate();
   const user = getUser();
-  const patient= useDoctorDetails();
-  console.log("krishan",patient);
 
   const handleLogout = () => {
     logout();
@@ -45,7 +42,6 @@ const DoctorDashboard = () => {
           <div className="card">
             <h3>Patients List</h3>
             <PatientsTable/>
-            <SeasonalDiseases/>
             </div>
         </div>
       </div>

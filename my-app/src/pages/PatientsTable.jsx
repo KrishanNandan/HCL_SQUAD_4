@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import PropTypes from "prop-types";
+import { useDoctorDetails } from "../hooks/useDoctorDetails";
 
 export default function PatientsTable({
   patients: patientsProp,
@@ -15,6 +16,25 @@ export default function PatientsTable({
   const [page, setPage] = useState(1);
   const [sort, setSort] = useState({ key: "PatientName", direction: "asc" });
   const [selectedIds, setSelectedIds] = useState(new Set());
+
+  const { data: hookData, loading: hookLoading, error: hookError } = useDoctorDetails();
+
+  console.log("hook",hookData);
+  useEffect(() => {
+    if (Array.isArray(hookData) && hookData.length > 0) {
+      const formattedData = hookData.map((patient, index) => ({
+        id: index + 1,
+        PatientName: patient.name || "—",
+        Age: patient.age || "—",
+        Sex: patient.sex || "—",
+        Disease: patient.disease || "—",
+        StepsPerWeek: patient["step/week"] || "—",
+        SleepPerDay: patient["sleep/day"] || "—",
+        HealthCondition: patient["health-condition"] || "—",
+      }));
+      setPatients(formattedData);
+    }
+  }, [hookData]);
 
   useEffect(() => {
     if (Array.isArray(patientsProp)) setPatients(patientsProp);
@@ -188,7 +208,7 @@ export default function PatientsTable({
           </thead>
 
           <tbody>
-            {loading ? (
+            {(loading || hookLoading) ? (
               <tr>
                 <td colSpan={columns.length + 2} style={{ ...styles.td, textAlign: "center", padding: 30 }}>
                   Loading...
@@ -219,25 +239,6 @@ export default function PatientsTable({
                   <td style={styles.td}>{formatNumber(r.StepsPerWeek)}</td>
                   <td style={styles.td}>{formatNumber(r.SleepPerDay)}</td>
                   <td style={styles.td}>{r.HealthCondition ?? "—"}</td>
-
-                  <td style={styles.td}>
-                    <button
-                      onClick={() => onEdit && onEdit(r)}
-                      style={{ ...styles.smallBtn, marginRight: 8 }}
-                      aria-label={`Edit ${r.PatientName || r.id}`}
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => {
-                        if (window.confirm("Delete this patient?")) handleDelete(r.id);
-                      }}
-                      style={{ ...styles.smallBtn, background: "#fff0f0", borderColor: "#f1c0c0", color: "#762626" }}
-                      aria-label={`Delete ${r.PatientName || r.id}`}
-                    >
-                      Delete
-                    </button>
-                  </td>
                 </tr>
               ))
             )}
